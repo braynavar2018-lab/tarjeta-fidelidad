@@ -8,38 +8,46 @@
 </head>
 <body class="text-white flex flex-col items-center justify-center min-h-screen p-4 font-sans relative overflow-x-hidden">
 
-    <!-- IMAGEN DE FONDO CON FILTRO OSCURO -->
+    <!-- IMAGEN DE FONDO PERSONALIZADA CON FILTRO OSCURO -->
     <div class="absolute inset-0 z-0">
         <img src="pexels-ileana-ramona-nae-12897929-6332250.jpg" alt="Fondo Cafetería" class="w-full h-full object-cover">
-        <!-- Esta capa oscura (overlay) asegura que los textos se lean perfectamente -->
         <div class="absolute inset-0 bg-black/80 backdrop-blur-[2px]"></div>
     </div>
 
-    <!-- Contenido Principal (Flotando sobre la imagen) -->
+    <!-- Contenido Principal -->
     <div class="relative z-10 w-full flex flex-col items-center">
 
         <!-- Pantalla de Login -->
         <div id="login-screen" class="w-full max-w-sm text-center bg-zinc-900/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-amber-500/30">
-            <img src="1792363508320.png" alt="Logo" class="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-amber-500/50 shadow-lg">
-            <h1 class="text-2xl font-bold mb-2">Cafetería Lealtad</h1>
-            <p class="mb-6 text-zinc-300 text-sm">Ingresa tu número de celular para ver tus puntos</p>
+            <!-- LOGOTIPO REAL -->
+            <img src="1792363508320.png" alt="Logotipo" class="w-20 h-20 rounded-full mx-auto mb-4 object-cover border-2 border-amber-500/50 shadow-lg">
+            
+            <h1 class="text-2xl font-bold mb-2">Programa de Lealtad</h1>
+            <p class="mb-6 text-zinc-300 text-sm">Ingresa tu celular para ver tus puntos o registrarte</p>
             <input type="number" id="telefono" class="w-full p-3.5 rounded-xl bg-zinc-800 text-white border border-zinc-700 mb-4 text-center text-xl focus:outline-none focus:border-amber-500" placeholder="Ej: 9711234567">
-            <button onclick="iniciarSesion()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20">Ver mis puntos</button>
+            <button onclick="iniciarSesion()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20">Continuar</button>
             <p id="msg-login" class="text-red-400 mt-4 text-sm hidden"></p>
+        </div>
+
+        <!-- Pantalla de Registro (Aparece si el número es nuevo) -->
+        <div id="register-screen" class="w-full max-w-sm text-center bg-zinc-900/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-amber-500/30 hidden">
+            <img src="1792363508320.png" alt="Logotipo" class="w-20 h-20 rounded-full mx-auto mb-4 object-cover border-2 border-amber-500/50 shadow-lg">
+            <h1 class="text-2xl font-bold mb-2">¡Bienvenido!</h1>
+            <p class="mb-6 text-zinc-300 text-sm">Es tu primera vez aquí. Ingresa tu nombre para darte de alta:</p>
+            <input type="text" id="nombre-nuevo" class="w-full p-3.5 rounded-xl bg-zinc-800 text-white border border-zinc-700 mb-4 text-center text-lg focus:outline-none focus:border-amber-500" placeholder="Tu Nombre Completo">
+            <button onclick="registrarCliente()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20">Crear mi tarjeta</button>
         </div>
 
         <!-- Pantalla de Puntos (Dashboard) -->
         <div id="dashboard-screen" class="w-full max-w-sm text-center hidden">
             <h2 class="text-xl font-medium text-zinc-300 mb-1">¡Qué gusto verte, <span id="lbl-nombre" class="text-amber-400 font-bold"></span>!</h2>
             
-            <!-- Tarjeta Digital Estilo Wallet -->
             <div class="bg-gradient-to-br from-zinc-900/95 to-zinc-950/95 backdrop-blur-md p-6 rounded-3xl mb-6 shadow-2xl border border-amber-500/40 relative overflow-hidden">
                 <div class="absolute top-0 right-0 transform translate-x-4 -translate-y-4 w-24 h-24 bg-amber-500/10 rounded-full blur-xl"></div>
                 <p class="text-xs uppercase tracking-widest text-amber-500 font-semibold mb-2">Tus Puntos Acumulados</p>
                 <p class="text-7xl font-black text-white mb-2" id="lbl-puntos">0</p>
                 <p class="text-xs text-zinc-400">¡Acumula sellos y gana café gratis!</p>
                 
-                <!-- Barra de progreso visual -->
                 <div class="w-full bg-zinc-800 h-2.5 rounded-full mt-6 overflow-hidden">
                     <div id="barra-progreso" class="bg-amber-500 h-full w-0 transition-all duration-500"></div>
                 </div>
@@ -61,8 +69,7 @@
     </div>
 
     <script>
-        // PEGA TU LINK DE APPS SCRIPT AQUÍ ABAJO
-        const API_URL = "URL_DE_TU_APPS_SCRIPT_AQUI";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwkTVgXgHAVIxRFp4IziT-2l7IP9OGJ2wr90gp0B4EoCMwsn-DezkNAc97oNdAKapCm-A/exec";
         let miTelefono = "";
 
         async function iniciarSesion() {
@@ -70,34 +77,62 @@
             if(!miTelefono) return;
             
             const btn = event.target;
-            btn.innerText = "Cargando...";
+            btn.innerText = "Verificando...";
             
             try {
                 const res = await fetch(`${API_URL}?action=login&telefono=${miTelefono}`);
                 const data = await res.json();
                 
                 if(data.success) {
+                    mostrarDashboard(data.nombre, data.puntos, data.rol);
+                } else if(data.nuevo) {
                     document.getElementById("login-screen").classList.add("hidden");
-                    document.getElementById("dashboard-screen").classList.remove("hidden");
-                    document.getElementById("lbl-nombre").innerText = data.nombre;
-                    document.getElementById("lbl-puntos").innerText = data.puntos;
-                    
-                    let pts = parseInt(data.puntos) || 0;
-                    let porcentaje = Math.min((pts / 10) * 100, 100);
-                    document.getElementById("barra-progreso").style.width = porcentaje + "%";
-                    document.getElementById("lbl-faltantes").innerText = pts >= 10 ? "¡Felicidades, tienes una bebida gratis lista!" : `Te faltan ${10 - pts} puntos para tu recompensa`;
-
-                    if(data.rol === "Admin") {
-                        document.getElementById("admin-panel").classList.remove("hidden");
-                    }
+                    document.getElementById("register-screen").classList.remove("hidden");
                 } else {
-                    document.getElementById("msg-login").innerText = "Número no registrado en el sistema.";
+                    document.getElementById("msg-login").innerText = "Error al verificar el número.";
                     document.getElementById("msg-login").classList.remove("hidden");
-                    btn.innerText = "Ver mis puntos";
+                    btn.innerText = "Continuar";
                 }
             } catch(e) {
-                btn.innerText = "Ver mis puntos";
+                btn.innerText = "Continuar";
                 alert("Error de conexión con el servidor.");
+            }
+        }
+
+        async function registrarCliente() {
+            const nombreNuevo = document.getElementById("nombre-nuevo").value;
+            if(!nombreNuevo) return;
+
+            const btn = event.target;
+            btn.innerText = "Creando tarjeta...";
+
+            try {
+                const res = await fetch(`${API_URL}?action=registrar&telefono=${miTelefono}&nombre=${encodeURIComponent(nombreNuevo)}`);
+                const data = await res.json();
+
+                if(data.success) {
+                    mostrarDashboard(data.nombre, data.puntos, data.rol);
+                }
+            } catch(e) {
+                btn.innerText = "Crear mi tarjeta";
+                alert("Error al registrar.");
+            }
+        }
+
+        function mostrarDashboard(nombre, puntos, rol) {
+            document.getElementById("login-screen").classList.add("hidden");
+            document.getElementById("register-screen").classList.add("hidden");
+            document.getElementById("dashboard-screen").classList.remove("hidden");
+            document.getElementById("lbl-nombre").innerText = nombre;
+            document.getElementById("lbl-puntos").innerText = puntos;
+            
+            let pts = parseInt(puntos) || 0;
+            let porcentaje = Math.min((pts / 10) * 100, 100);
+            document.getElementById("barra-progreso").style.width = porcentaje + "%";
+            document.getElementById("lbl-faltantes").innerText = pts >= 10 ? "¡Felicidades, tienes una bebida gratis lista!" : `Te faltan ${10 - pts} puntos para tu recompensa`;
+
+            if(rol === "Admin") {
+                document.getElementById("admin-panel").classList.remove("hidden");
             }
         }
 
