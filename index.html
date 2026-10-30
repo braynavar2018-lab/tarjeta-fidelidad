@@ -4,33 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tarjeta de Fidelidad</title>
-    <!-- Usamos Tailwind CSS para que se vea como app profesional sin escribir diseño -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-zinc-900 text-white flex flex-col items-center justify-center min-h-screen p-4 font-sans">
+<body class="bg-zinc-950 text-white flex flex-col items-center justify-center min-h-screen p-4 font-sans">
 
-    <div id="login-screen" class="w-full max-w-sm text-center">
-        <h1 class="text-3xl font-bold mb-6">Puntos Caffeto</h1>
-        <p class="mb-4 text-zinc-400">Ingresa tu número de celular para ver tu tarjeta</p>
-        <input type="number" id="telefono" class="w-full p-3 rounded-lg text-black mb-4 text-center text-xl" placeholder="Ej: 9711234567">
-        <button onclick="iniciarSesion()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-3 rounded-lg transition">Ver mis puntos</button>
-        <p id="msg-login" class="text-red-400 mt-4 hidden"></p>
+    <!-- Pantalla de Login -->
+    <div id="login-screen" class="w-full max-w-sm text-center bg-zinc-900 p-8 rounded-3xl shadow-2xl border border-zinc-800">
+        <!-- LOGO O ICONO DEL NEGOCIO -->
+        <div class="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-500/30">
+            <span class="text-3xl">☕</span>
+        </div>
+        <h1 class="text-2xl font-bold mb-2">Programa de Lealtad</h1>
+        <p class="mb-6 text-zinc-400 text-sm">Ingresa tu número de celular para ver tus puntos</p>
+        <input type="number" id="telefono" class="w-full p-3.5 rounded-xl bg-zinc-800 text-white border border-zinc-700 mb-4 text-center text-xl focus:outline-none focus:border-amber-500" placeholder="Ej: 9711234567">
+        <button onclick="iniciarSesion()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-3.5 rounded-xl transition shadow-lg shadow-amber-500/20">Ver mis puntos</button>
+        <p id="msg-login" class="text-red-400 mt-4 text-sm hidden"></p>
     </div>
 
+    <!-- Pantalla de Puntos (Dashboard) -->
     <div id="dashboard-screen" class="w-full max-w-sm text-center hidden">
-        <h2 class="text-2xl font-bold mb-2">¡Hola, <span id="lbl-nombre"></span>!</h2>
-        <div class="bg-zinc-800 p-6 rounded-2xl mb-6 shadow-xl border border-zinc-700">
-            <p class="text-zinc-400 mb-2">Tienes acumulados:</p>
-            <p class="text-6xl font-black text-amber-500 mb-2" id="lbl-puntos">0</p>
-            <p class="text-sm text-zinc-400">puntos</p>
+        <h2 class="text-xl font-medium text-zinc-400 mb-1">¡Qué gusto verte, <span id="lbl-nombre" class="text-white font-bold"></span>!</h2>
+        
+        <!-- Tarjeta Digital Estilo Wallet -->
+        <div class="bg-gradient-to-br from-zinc-900 to-zinc-900 p-6 rounded-3xl mb-6 shadow-2xl border border-amber-500/40 relative overflow-hidden">
+            <div class="absolute top-0 right-0 transform translate-x-4 -translate-y-4 w-24 h-24 bg-amber-500/10 rounded-full blur-xl"></div>
+            <p class="text-xs uppercase tracking-widest text-amber-500 font-semibold mb-2">Tus Puntos Acumulados</p>
+            <p class="text-7xl font-black text-white mb-2" id="lbl-puntos">0</p>
+            <p class="text-xs text-zinc-400">¡Acumula sellos y gana recompensas!</p>
+            
+            <!-- Barra de progreso visual (Ej: Meta de 10 puntos) -->
+            <div class="w-full bg-zinc-800 h-2.5 rounded-full mt-6 overflow-hidden">
+                <div id="barra-progreso" class="bg-amber-500 h-full w-0 transition-all duration-500"></div>
+            </div>
+            <p class="text-[11px] text-zinc-500 mt-1.5"><span id="lbl-faltantes">Faltan puntos para tu premio</span></p>
         </div>
         
-        <!-- Esta sección solo se mostrará si quien entra es Admin -->
-        <div id="admin-panel" class="hidden bg-zinc-800 p-4 rounded-xl border border-blue-500/50">
-            <h3 class="font-bold text-blue-400 mb-3">Panel de Empleado</h3>
-            <input type="number" id="telefono-cliente" class="w-full p-2 rounded text-black mb-3" placeholder="Celular del cliente a sellar">
-            <button onclick="sumarPunto()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded">Sumar 1 Punto</button>
-            <p id="msg-admin" class="mt-2 text-sm"></p>
+        <!-- Panel de Empleado (Admin) -->
+        <div id="admin-panel" class="hidden bg-zinc-900 p-5 rounded-3xl border border-blue-500/40 shadow-xl text-left">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                <h3 class="font-bold text-blue-400 text-sm uppercase tracking-wider">Panel de Empleado</h3>
+            </div>
+            <input type="number" id="telefono-cliente" class="w-full p-3 rounded-xl bg-zinc-800 text-white border border-zinc-700 mb-3 text-sm focus:outline-none focus:border-blue-500" placeholder="Celular del cliente a sellar">
+            <button onclick="sumarPunto()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition text-sm shadow-lg shadow-blue-600/20">Sumar 1 Punto</button>
+            <p id="msg-admin" class="mt-3 text-sm text-center"></p>
         </div>
     </div>
 
@@ -56,16 +73,23 @@
                     document.getElementById("lbl-nombre").innerText = data.nombre;
                     document.getElementById("lbl-puntos").innerText = data.puntos;
                     
+                    // Calcular barra de progreso (asumiendo meta de 10 puntos)
+                    let pts = parseInt(data.puntos) || 0;
+                    let porcentaje = Math.min((pts / 10) * 100, 100);
+                    document.getElementById("barra-progreso").style.width = porcentaje + "%";
+                    document.getElementById("lbl-faltantes").innerText = pts >= 10 ? "¡Felicidades, tienes una recompensa lista!" : `Te faltan ${10 - pts} puntos para tu recompensa`;
+
                     if(data.rol === "Admin") {
                         document.getElementById("admin-panel").classList.remove("hidden");
                     }
                 } else {
-                    document.getElementById("msg-login").innerText = "Número no registrado.";
+                    document.getElementById("msg-login").innerText = "Número no registrado en el sistema.";
                     document.getElementById("msg-login").classList.remove("hidden");
                     btn.innerText = "Ver mis puntos";
                 }
             } catch(e) {
                 btn.innerText = "Ver mis puntos";
+                alert("Error de conexión con el servidor.");
             }
         }
 
@@ -74,8 +98,8 @@
             const msg = document.getElementById("msg-admin");
             if(!telCliente) return;
 
-            msg.innerText = "Guardando...";
-            msg.className = "mt-2 text-sm text-zinc-400";
+            msg.innerText = "Guardando sello...";
+            msg.className = "mt-3 text-sm text-zinc-400 text-center";
 
             try {
                 const res = await fetch(`${API_URL}?action=sumar&admin=${miTelefono}&cliente=${telCliente}`);
@@ -83,14 +107,15 @@
 
                 if(data.success) {
                     msg.innerText = "¡Punto sumado con éxito!";
-                    msg.className = "mt-2 text-sm text-green-400";
+                    msg.className = "mt-3 text-sm text-green-400 font-semibold text-center";
                     document.getElementById("telefono-cliente").value = "";
                 } else {
                     msg.innerText = "Error: " + data.error;
-                    msg.className = "mt-2 text-sm text-red-400";
+                    msg.className = "mt-3 text-sm text-red-400 text-center";
                 }
             } catch(e) {
                 msg.innerText = "Error de conexión.";
+                msg.className = "mt-3 text-sm text-red-400 text-center";
             }
         }
     </script>
